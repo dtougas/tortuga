@@ -31,6 +31,11 @@ class TortugaScript(Cli):
     """
     command_package = 'tortuga.scripts.tortuga.commands'
 
+    #
+    # Command history will be logged to the following file
+    #
+    HISTORY = '~/.cache/tortuga'
+
     arguments = [
         Argument(
             '-v', '--version',
@@ -83,6 +88,10 @@ class TortugaScript(Cli):
         self._version(args)
         self._set_log_level(args)
 
+    def run(self):
+        super().run()
+        self._log_history()
+
     def _version(self, args: argparse.Namespace):
         """
         Implements the --version argument.
@@ -115,6 +124,15 @@ class TortugaScript(Cli):
             )
             ch.setFormatter(formatter)
             root_logger.addHandler(ch)
+
+    def _log_history(self):
+        history_dir = os.path.dirname(self.HISTORY)
+
+        if not os.path.exists(history_dir):
+            os.makedirs(history_dir)
+
+        with open(self.HISTORY, 'a') as fp:
+            fp.write(' '.join(sys.argv))
 
 
 def main():

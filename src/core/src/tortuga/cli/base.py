@@ -224,9 +224,11 @@ class Cli(Command):
             args = self.parser.parse_args()
             self.pre_execute(args)
             args.command.execute(args)
+
         except Exception as ex:
             print(ex)
             raise SystemExit(-1)
+
         except SystemExit:
             raise
 
