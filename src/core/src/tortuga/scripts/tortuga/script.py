@@ -35,7 +35,7 @@ class TortugaScript(Cli):
     #
     # Command history will be logged to the following file
     #
-    HISTORY = '~/.cache/tortuga'
+    HISTORY = os.path.expanduser('~/.cache/tortuga')
 
     arguments = [
         Argument(
@@ -133,7 +133,8 @@ class TortugaScript(Cli):
             os.makedirs(history_dir)
 
         with open(self.HISTORY, 'a') as fp:
-            fp.write(' '.join(sys.argv))
+            line = ' '.join(sys.argv)
+            fp.write('{}\n'.format(line))
 
 
 def main():

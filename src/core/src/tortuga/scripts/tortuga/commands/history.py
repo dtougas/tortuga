@@ -15,7 +15,7 @@
 import argparse
 import os
 
-from tortuga.cli.base import Command
+from tortuga.cli.base import RootCommand, Command
 from tortuga.cli.utils import pretty_print
 from ..script import TortugaScript
 
@@ -33,7 +33,7 @@ class ListCommand(Command):
 
         if os.path.exists(TortugaScript.HISTORY):
             with open(TortugaScript.HISTORY) as fp:
-                for line in fp.readline():
+                for line in fp.readlines():
                     line = line.strip()
                     #
                     # Remove blank lines
@@ -57,3 +57,17 @@ class ClearCommand(Command):
         if os.path.exists(TortugaScript.HISTORY):
             with open(TortugaScript.HISTORY, 'w') as fp:
                 fp.write('')
+
+
+class HistoryCommand(RootCommand):
+    """
+    Command for managing Tortuga CLI history.
+
+    """
+    name = 'history'
+    help = 'Manage Tortuga CLI history'
+
+    sub_commands = [
+        ListCommand(),
+        ClearCommand()
+    ]
