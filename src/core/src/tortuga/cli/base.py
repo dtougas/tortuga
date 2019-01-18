@@ -16,9 +16,10 @@ import argparse
 import importlib
 import logging
 import pkgutil
-from typing import List, Optional, Type
+from typing import List, Optional, Type, Callable
 
 from tortuga.logging import CLI_NAMESPACE
+from . import exceptions
 
 
 class Command:
@@ -36,9 +37,21 @@ class Command:
         A command.
 
         """
+        self.root: 'Cli' = None
         self.parent: 'Command' = None
         self.parser: Optional[argparse.ArgumentParser] = None
+        self._pre_execute_list: List[Callable] = []
+        self._post_execute_list: List[Callable] = []
         self._logger = logging.getLogger(CLI_NAMESPACE)
+
+    def set_root(self, root: 'Cli'):
+        """
+        Sets the root cli instance.
+
+        :param Command root: the root cli instance
+
+        """
+        self.root = root
 
     def set_parent(self, parent: 'Command'):
         """
@@ -80,6 +93,7 @@ class Command:
         if sub_commands:
             subparsers = parser.add_subparsers()
             for command in sub_commands:
+                command.set_root(self.root)
                 command.set_parent(self)
 
                 kwargs = {}
@@ -125,6 +139,54 @@ class Command:
         """
         return self.arguments
 
+    def register_pre_execute(self, func: Callable):
+        """
+        Registers a callable to be executed prior to executing the command.
+        This callable must accept a single argument, having the same
+        method signature as the pre_execute method on this class.
+
+        :param Callable func: the callable to add to the pre-execute list
+
+        """
+        self._pre_execute_list.append(func)
+
+    def register_post_execute(self, func: Callable):
+        """
+        Registers a callable to be executed after executing the command. This
+        callable will not be called if the execute process raised an
+        exception. This callable must accept a single argument, having the
+        same method signature as the post_execute method on this class.
+
+        :param Callable func: the callable to add to the post-execute list
+
+        """
+        self._pre_execute_list.append(func)
+
+    def pre_execute(self, args: argparse.Namespace):
+        """
+        Executed by run prior to the actual command getting executed.
+
+        :param argparse.Namespace args: the parsed arguments
+
+        :raises SkipExecution: informs caller to skip execution and
+                               post execution steps
+
+        """
+        skip_execution = False
+        for func in self._pre_execute_list:
+            #
+            # Capture all SkipExecution exceptions so that we can run
+            # all pre-execute calls prior to raising the exception
+            #
+            try:
+                func(args)
+
+            except exceptions.SkipExecution:
+                skip_execution = True
+
+        if skip_execution:
+            raise exceptions.SkipExecution
+
     def execute(self, args: argparse.Namespace):
         """
         Executes the command.  If not overloaded,
@@ -132,8 +194,26 @@ class Command:
 
         :param argparse.Namespace args: the command arguments
 
+        :raises SkipPostExecution: informs caller to skip post execution steps
+
         """
         self.parser.print_help()
+
+        #
+        # Don't bother running any post execution, as nothing really
+        # happened here
+        #
+        raise exceptions.SkipPostExecution()
+
+    def post_execute(self, args: argparse.Namespace):
+        """
+        Executed by after to actual command was successfully executed.
+
+        :param argparse.Namespace args: the parsed arguments
+
+        """
+        for func in self._post_execute_list:
+            func(args)
 
 
 class Argument:
@@ -210,6 +290,11 @@ class Cli(Command):
         super().__init__()
 
         #
+        # This is the root level command interpreter
+        #
+        self.set_root(self)
+
+        #
         # Initialize the base parser and build it
         #
         parser_: argparse.ArgumentParser = argparse.ArgumentParser()
@@ -220,10 +305,15 @@ class Cli(Command):
         Runs CLI utility.
 
         """
+        #
+        # Parse arguments and pre-execute
+        #
         try:
             args = self.parser.parse_args()
             self.pre_execute(args)
-            args.command.execute(args)
+
+        except exceptions.SkipExecution:
+            return
 
         except Exception as ex:
             print(ex)
@@ -232,14 +322,34 @@ class Cli(Command):
         except SystemExit:
             raise
 
-    def pre_execute(self, args: argparse.Namespace):
-        """
-        Executed by run prior to the actual command getting executed.
+        #
+        # Execute
+        #
+        try:
+            args.command.execute(args)
 
-        :param argparse.Namespace args: the parsed arguments
+        except exceptions.SkipPostExecution:
+            return
 
-        """
-        pass
+        except Exception as ex:
+            print(ex)
+            raise SystemExit(-1)
+
+        except SystemExit:
+            raise
+
+        #
+        # Post execution
+        #
+        try:
+            self.post_execute(args)
+
+        except Exception as ex:
+            print(ex)
+            raise SystemExit(-1)
+
+        except SystemExit:
+            raise
 
     def get_command_package_name(self) -> str:
         """

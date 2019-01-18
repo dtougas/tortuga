@@ -18,6 +18,7 @@ import os
 import sys
 
 from tortuga.cli.base import Argument, Cli
+from tortuga.cli.exceptions import SkipExecution
 from tortuga.config.configManager import ConfigManager
 from tortuga.logging import CLI_NAMESPACE, ROOT_NAMESPACE
 
@@ -32,10 +33,6 @@ class TortugaScript(Cli):
     """
     command_package = 'tortuga.scripts.tortuga.commands'
 
-    #
-    # Command history will be logged to the following file
-    #
-    HISTORY = os.path.expanduser('~/.cache/tortuga')
 
     arguments = [
         Argument(
@@ -82,16 +79,10 @@ class TortugaScript(Cli):
         )
     ]
 
-    def get_command_package(self):
-        return 'tortuga.cli.commands'
-
-    def pre_execute(self, args: argparse.Namespace):
-        self._version(args)
-        self._set_log_level(args)
-
-    def run(self):
-        super().run()
-        self._log_history()
+    def build_parser(self, parser: argparse.ArgumentParser):
+        self.register_pre_execute(self._version)
+        self.register_pre_execute(self._set_log_level)
+        super().build_parser(parser)
 
     def _version(self, args: argparse.Namespace):
         """
@@ -107,7 +98,11 @@ class TortugaScript(Cli):
                     cm.getTortugaRelease()
                 )
             )
-            sys.exit(0)
+
+            #
+            # Don't bother doing any command execution
+            #
+            raise SkipExecution()
 
     def _set_log_level(self, args: argparse.Namespace):
         """
@@ -125,16 +120,6 @@ class TortugaScript(Cli):
             )
             ch.setFormatter(formatter)
             root_logger.addHandler(ch)
-
-    def _log_history(self):
-        history_dir = os.path.dirname(self.HISTORY)
-
-        if not os.path.exists(history_dir):
-            os.makedirs(history_dir)
-
-        with open(self.HISTORY, 'a') as fp:
-            line = ' '.join(sys.argv)
-            fp.write('{}\n'.format(line))
 
 
 def main():

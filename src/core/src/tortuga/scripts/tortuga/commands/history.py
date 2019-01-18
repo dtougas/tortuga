@@ -14,10 +14,13 @@
 
 import argparse
 import os
+import sys
 
 from tortuga.cli.base import RootCommand, Command
 from tortuga.cli.utils import pretty_print
-from ..script import TortugaScript
+
+
+HISTORY_FILE = os.path.expanduser('~/.cache/tortuga')
 
 
 class ListCommand(Command):
@@ -31,8 +34,8 @@ class ListCommand(Command):
     def execute(self, args: argparse.Namespace):
         result = []
 
-        if os.path.exists(TortugaScript.HISTORY):
-            with open(TortugaScript.HISTORY) as fp:
+        if os.path.exists(HISTORY_FILE):
+            with open(HISTORY_FILE) as fp:
                 for line in fp.readlines():
                     line = line.strip()
                     #
@@ -54,8 +57,8 @@ class ClearCommand(Command):
     help = 'Clear command history'
 
     def execute(self, args: argparse.Namespace):
-        if os.path.exists(TortugaScript.HISTORY):
-            with open(TortugaScript.HISTORY, 'w') as fp:
+        if os.path.exists(HISTORY_FILE):
+            with open(HISTORY_FILE, 'w') as fp:
                 fp.write('')
 
 
@@ -71,3 +74,35 @@ class HistoryCommand(RootCommand):
         ListCommand(),
         ClearCommand()
     ]
+
+    def build_parser(self, parser: argparse.ArgumentParser):
+        #
+        # Register the command logger to be called after every command
+        # execution
+        #
+        self.root.register_post_execute(self._log_command)
+        super().build_parser(parser)
+
+    def _log_command(self, _: argparse.Namespace):
+        """
+        Logs the command that was just run to the command history file.
+
+        """
+        history_dir = os.path.dirname(HISTORY_FILE)
+
+        if not os.path.exists(history_dir):
+            os.makedirs(history_dir)
+
+        #
+        # Don't log history commands
+        #
+        for arg in sys.argv:
+            if arg.startswith('-'):
+                continue
+
+            elif arg == self.name:
+                return
+
+        with open(HISTORY_FILE, 'a') as fp:
+            line = ' '.join(sys.argv)
+            fp.write('{}\n'.format(line))
