@@ -23,7 +23,7 @@ All trademarks mentioned within this document are the property of their respecti
 
 \newpage
 
-## Tortuga Quickstart {#quickstart}
+## Tortuga Quickstart
 
 ### Manual quickstart installation
 
@@ -76,7 +76,7 @@ Commands listed in this "Quickstart" section are intended to be run as the
     CentOS AMIs on Amazon EC2.
 
     If hosting the Tortuga installer on Amazon Web Services (AWS), refer
-    to [Tortuga AWS Identity &amp; Access Management (IAM) role policy requirements](#iam_policy).
+    to Tortuga AWS Identity &amp; Access Management (IAM) role policy requirements.
 
 * Disable SELinux
 
@@ -188,7 +188,7 @@ Commands listed in this "Quickstart" section are intended to be run as the
 
     **Note:** if attempting to install Tortuga on a server where Tortuga
     (any version) has been previously installed, please refer to [Appendix
-    C: Uninstalling Tortuga](#appendix_c) before proceeding! It is
+    C: Uninstalling Tortuga](#appendix-c-uninstalling-tortuga) before proceeding! It is
     *strongly recommended* to install Tortuga on a fresh installation of
     RHEL/CentOS.
 
@@ -336,6 +336,17 @@ Commands listed in this "Quickstart" section are intended to be run as the
     instances already have an operating system installed, it is not necessary to
     define the installation media.
 
+    **Note**: Software profiles are created with a default max nodes setting
+    of 25. To change or remove this limit:
+
+    ```shell
+    update-software-profile --name execd --max-nodes XX
+    ```
+
+    Where `XX` is the maximum number of nodes you want to allow. To remove
+    the limit altogether, use `none`. See the section on software profiles
+    below for more information.
+
 1. Create hardware profile for compute nodes
 
     This hardware profile will used to represent compute nodes in the
@@ -393,7 +404,7 @@ Commands listed in this "Quickstart" section are intended to be run as the
 
     ```shell
     install-kit --i-accept-the-eula kit-awsadapter-*.tar.bz2
-    enable-component -p --no-sync awsadapter-7.0.2-0 management-7.0.2
+    enable-component -p --no-sync awsadapter-7.0.3-0 management-7.0.3
     ```
 
     1. Configure AWS resource adapter
@@ -442,7 +453,7 @@ Commands listed in this "Quickstart" section are intended to be run as the
         group must allow unrestricted access to all instances within the
         same security group (ie. installer and compute instances.
         Alternatively, specific ports may be opened as documented in
-        [Firewall Configuration](#firewall) below.
+        [Firewall Configuration](#firewall-configuration) below.
 
         Use one of the following values for `user_data_script_template`:
 
@@ -452,10 +463,10 @@ Commands listed in this "Quickstart" section are intended to be run as the
         * `bootstrap.debian.tmpl` for recent Debian/Ubuntu versions
         * `bootstrap.suse.tmpl` for SUSE Linux/openSUSE versions
 
-    `adapter-mgmt update` can be used to manage resource adapter configuration
-    profile settings. Erroneous/invalid settings can be removed by using
-    `adapter-mgmt update PROFILENAME --delete NAME`, where `NAME` is the
-    setting name.
+        `adapter-mgmt update` can be used to manage resource adapter
+        configuration profile settings. Erroneous/invalid settings can be
+        removed by using `adapter-mgmt update PROFILENAME --delete NAME`,
+        where `NAME` is the setting name.
 
     1. Create hardware profile to represent EC2 nodes
 
@@ -512,9 +523,9 @@ Commands listed in this "Quickstart" section are intended to be run as the
 
     1. Install UGE kit
 
-    ```shell
-    install-kit kit-uge*.tar.bz2
-    ```
+        ```shell
+        install-kit kit-uge*.tar.bz2
+        ```
 
     1. Create default Grid Engine cluster
 
@@ -891,7 +902,7 @@ requires Internet access. Additional software kits may require Internet
 access during their installation and configuration to resolve dependencies,
 however.
 
-#### Firewall Configuration {#firewall}
+#### Firewall Configuration
 
 It is recommended that any system-level firewall be disabled on both the
 Tortuga installer and compute nodes during the initial installation. Once a
@@ -1431,8 +1442,8 @@ update-software-profile --name NAME --unlock
 
 ##### Software profile minimum and maximum nodes
 
-Software profiles do not have imposed minimums or maximums. That is, all
-software profiles may have an unlimited number of software profiles.
+Software profiles do not have imposed minimums but will by default not allow
+for more than a maximum of 25 nodes.
 
 The following command imposes a software profile minimum:
 
@@ -1468,6 +1479,12 @@ update-software-profile --name NAME --max-nodes none
 ```shell
 update-software-profile --name NAME --min-nodes none --max-nodes none
 ```
+
+Having no maximum implies that an unlimited number of nodes can be created
+for a software profile. **Use this setting with caution, especially when using
+automation rules for scaling up clusters.** If you have no maximum set and
+your scaling rules have a bug, you could end-up with an (unintentionally) very
+high bill for cloud services.
 
 #### Deleting software profiles
 
@@ -1534,13 +1551,13 @@ operating system):
 
 ```shell
 [root@tortuga ~]# get-kit-list
-awsadapter-7.0.2-0
-base-7.0.2-0
+awsadapter-7.0.3-0
+base-7.0.3-0
 centos-7.0-0
 ganglia-3.7.2-1
-gceadapter-7.0.2-0
-simple_policy_engine-7.0.2-0
-snmp-7.0.2-0
+gceadapter-7.0.3-0
+simple_policy_engine-7.0.3-0
+snmp-7.0.3-0
 uge-8.6.4-0
 ```
 
@@ -1577,19 +1594,19 @@ Use `get-component-list` to display all available components.
 
 ```shell
 [root@tortuga ~]# get-component-list
-snmp-7.0.2-0 snmpd-7.0.2
-base-7.0.2-0 core-7.0.2
-base-7.0.2-0 installer-7.0.2
-base-7.0.2-0 dhcpd-7.0.2
-base-7.0.2-0 dns-7.0.2
-awsadapter-7.0.2-0 management-7.0.2
-gceadapter-7.0.2-0 management-7.0.2
+snmp-7.0.3-0 snmpd-7.0.3
+base-7.0.3-0 core-7.0.3
+base-7.0.3-0 installer-7.0.3
+base-7.0.3-0 dhcpd-7.0.3
+base-7.0.3-0 dns-7.0.3
+awsadapter-7.0.3-0 management-7.0.3
+gceadapter-7.0.3-0 management-7.0.3
 uge-8.6.4-0 qmaster-8.6.4
 uge-8.6.4-0 execd-8.6.4
-simple_policy_engine-7.0.2-0 engine-7.0.2
+simple_policy_engine-7.0.3-0 engine-7.0.3
 ganglia-3.7.2-1 gmetad-3.7.2
 ganglia-3.7.2-1 gmond-3.7.2
-centos-7.0-0 centos-7.0-x86_64-7.0.2
+centos-7.0-0 centos-7.0-x86_64-7.0.3
 ```
 
 #### Display list of enabled components
@@ -1602,8 +1619,8 @@ For example, to display the components enabled on the Tortuga installer:
 
 ```shell
 [root@tortuga ~]# get-component-list --software-profile Installer
-base-7.0.2-0 installer-7.0.2
-base-7.0.2-0 dns-7.0.2
+base-7.0.3-0 installer-7.0.3
+base-7.0.3-0 dns-7.0.3
 uge-8.6.4-0 qmaster-8.6.4
 ```
 
@@ -1626,7 +1643,7 @@ command. For example, to enable the `pdsh` component on the Tortuga
 installer:
 
 ```shell
-enable-component -p base-7.0.2-0 pdsh-7.0.2
+enable-component -p base-7.0.3-0 pdsh-7.0.3
 ```
 
 **Hint:** Since it is unlikely to be another component named "pdsh", use
@@ -1702,7 +1719,7 @@ This component must be enabled to provision *local* (non-cloud) nodes.
 Enable the `dhcpd` component with the command:
 
 ```shell
-enable-component -p base-7.0.2-0 dhcpd-7.0.2
+enable-component -p base-7.0.3-0 dhcpd-7.0.3
 ```
 
 `/opt/puppetlabs/bin/puppet agent --onetime --no-daemonize` is used to
@@ -1727,7 +1744,7 @@ system to its associated IP address.
 Enable the `dns` component with the command:
 
 ```shell
-enable-component -p base-7.0.2-0 dns-7.0.2
+enable-component -p base-7.0.3-0 dns-7.0.3
 ```
 
 ###### Configuring Tortuga private DNS domain
@@ -1737,7 +1754,7 @@ compute node host name when provisioning on-premise physical or virtual
 machines or when *optionally* enabled in resource adapter(s) using the
 `override_dns_domain` resource adapter configuration setting.
 
-On Tortuga 7.0.2 (and later), the `set-private-dns-zone` command-line is
+On Tortuga 7.0.3 (and later), the `set-private-dns-zone` command-line is
 used to display the current "private" DNS zone by calling it without an
 argument:
 
@@ -1746,7 +1763,7 @@ argument:
 cloud.univa.com
 ```
 
-On Tortuga versions prior to 7.0.2, use `ucparam` to get the current
+On Tortuga versions prior to 7.0.3, use `ucparam` to get the current
 (private) DNS domain. The Tortuga default private DNS domain is `private`.
 
 ```shell
@@ -1958,8 +1975,8 @@ Enable the following base components on the installer for provisioning:
 These components are enabled using `enable-component`. For example:
 
 ```shell
-enable-component -p base-7.0.2-0 dhcpd-7.0.2
-enable-component -p base-7.0.2-0 dns-7.0.2
+enable-component -p base-7.0.3-0 dhcpd-7.0.3
+enable-component -p base-7.0.3-0 dns-7.0.3
 ```
 
 Use `get-component-list` to see the exact name of the components and
@@ -2784,13 +2801,13 @@ Cons:
 When a compute node is provisioned by Tortuga, it installs the base
 operating system from the OS media as provided by 'install-os-kit'.
 Packages which constitute the Tortuga "base" kit are installed from
-'/opt/tortuga/depot/kits/base/7.0.2-0/noarch'.
+'/opt/tortuga/depot/kits/base/7.0.3-0/noarch'.
 
 Updated packages can be dropped into this directory and will be
 automatically available to Tortuga provisioned compute nodes.
 
 **Note: after updating packages in
-`/opt/tortuga/depot/kits/base/7.0.2-0/noarch`, it is required to run
+`/opt/tortuga/depot/kits/base/7.0.3-0/noarch`, it is required to run
 `createrepo` to update the Tortuga **base** kit YUM repository metadata.**
 
 The key packages are `puppet-*`, `mcollective-*`, and the `ruby` dependencies.
@@ -3737,7 +3754,7 @@ under the License.
 
 \newpage
 
-## Appendix C: Uninstalling Tortuga {#appendix_c}
+## Appendix C: Uninstalling Tortuga
 
 Tortuga itself is contained within the `/opt/tortuga` directory, however
 there are configuration and support files elsewhere within the filesystem.
