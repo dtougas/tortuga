@@ -150,18 +150,6 @@ class Command:
         """
         self._pre_execute_list.append(func)
 
-    def register_post_execute(self, func: Callable):
-        """
-        Registers a callable to be executed after executing the command. This
-        callable will not be called if the execute process raised an
-        exception. This callable must accept a single argument, having the
-        same method signature as the post_execute method on this class.
-
-        :param Callable func: the callable to add to the post-execute list
-
-        """
-        self._pre_execute_list.append(func)
-
     def pre_execute(self, args: argparse.Namespace):
         """
         Executed by run prior to the actual command getting executed.
@@ -204,6 +192,18 @@ class Command:
         # happened here
         #
         raise exceptions.SkipPostExecution()
+
+    def register_post_execute(self, func: Callable):
+        """
+        Registers a callable to be executed after executing the command. This
+        callable will not be called if the execute process raised an
+        exception. This callable must accept a single argument, having the
+        same method signature as the post_execute method on this class.
+
+        :param Callable func: the callable to add to the post-execute list
+
+        """
+        self._pre_execute_list.append(func)
 
     def post_execute(self, args: argparse.Namespace):
         """
