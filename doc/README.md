@@ -1,3 +1,10 @@
+### Requirements
+
+In order to generate the documentation, you will need to have the following packages installed:
+
+- Pandoc
+- TeX Live (xetex, xelatex, and fonts)
+
 ### Generate PDF
 
 ```shell

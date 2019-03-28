@@ -6,7 +6,7 @@ cat doc/header.md doc/tortuga-7-admin-guide.md.raw | \
     -o doc/tortuga-7-admin-guide.md
 
 # generate PDF
-pandoc -f markdown+smart -H listings-setup.tex --listings \
+pandoc -f markdown+smart -H doc/listings-setup.tex --listings \
     -o doc/tortuga-7-admin-guide.pdf \
     --pdf-engine xelatex \
     --table-of-contents \

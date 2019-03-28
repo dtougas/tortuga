@@ -89,8 +89,8 @@ the `root` user on the Tortuga installer node.
     to Tortuga AWS Identity & Access Management (IAM) role policy
     requirements.
 
-    If installing on RHEL, make sure your Red Hat subscription has
-    been activated on the system prior to running the installation:
+    If installing on RHEL, make sure your Red Hat subscription has been
+    activated on the system prior to running the installation:
 
     ``` {.shell}
     subscription-manager register --username <username> --password <password>
@@ -2119,8 +2119,8 @@ ucparam set Timezone_zone America/New_York
 ```
 
 Please note, the Tortuga configuration setting `Timezone_utc` is not
-currently used in the default Kickstart template file. Set this
-manually in the Kickstart file template as appropriate.
+currently used in the default Kickstart template file. Set this manually
+in the Kickstart file template as appropriate.
 
 Use `ucparam list` to display list of Tortuga configuration settings.
 
